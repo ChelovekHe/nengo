@@ -169,6 +169,8 @@ class BasalGanglia(Module):
         self.ampa_config = ampa_config
         self.gaba_config = gaba_config
 
+        self.input_connections = {}
+
         ampa_config, override_ampa = config_with_default_synapse(
             self.ampa_config, nengo.Lowpass(0.002))
         gaba_config, override_gaba = config_with_default_synapse(
@@ -262,6 +264,6 @@ class BasalGanglia(Module):
             del gaba_config[nengo.Connection].synapse
 
     def connect_input(self, source, transform, index):
-        nengo.Connection(
+        self.input_connections[index] = nengo.Connection(
             source, self.input[index], transform=transform,
             synapse=self.input_synapse)
