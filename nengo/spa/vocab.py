@@ -14,7 +14,7 @@ from nengo.utils.compat import is_number, is_integer, range
 valid_sp_regex = re.compile('[A-Z][_a-zA-Z0-9]*')
 
 
-class Vocabulary(object):
+class Vocabulary(Mapping):
     """A collection of semantic pointers, each with their own text label.
 
     The Vocabulary can also act as a dictionary, with keys as the names
@@ -54,7 +54,7 @@ class Vocabulary(object):
         self.strict = strict
         self.max_similarity = max_similarity
         self.pointers = {}
-        self.keys = []
+        self._keys = []
         self._vectors = np.zeros((0, dimensions), dtype=float)
         self.rng = rng
 
@@ -101,10 +101,13 @@ class Vocabulary(object):
         return best_p
 
     def __contains__(self, key):
-        return key in self.keys
+        return key in self.pointers
 
     def __len__(self):
         return len(self._vectors)
+
+    def __iter__(self):
+        return iter(self._keys)
 
     def __getitem__(self, key):
         """Return the semantic pointer with the requested name."""
@@ -131,7 +134,7 @@ class Vocabulary(object):
                                   % key, attr='pointers', obj=self)
 
         self.pointers[key] = p
-        self.keys.append(key)
+        self._keys.append(key)
         self._vectors = np.vstack([self._vectors, p.v])
 
     def populate(self, pointers):
@@ -208,7 +211,7 @@ class Vocabulary(object):
             be created.
         """
         if keys is None:
-            keys = self.keys
+            keys = self._keys
 
         t = np.zeros((other.dimensions, self.dimensions), dtype=float)
         for k in keys:
